@@ -1,0 +1,34 @@
+{
+  "name": "@signaldex/sdk",
+  "version": "0.1.0",
+  "description": "Signaldex API client — prompt evaluation, leaderboard, confidence allocation",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "signaldex",
+    "prompt",
+    "evaluation",
+    "llm",
+    "benchmark"
+  ],
+  "license": "MIT"
+}

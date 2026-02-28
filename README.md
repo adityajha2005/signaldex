@@ -1,4 +1,4 @@
-# PDX — Prompt Derivatives Exchange
+# Signaldex
 
 Deterministic prompt evaluation engine. Submit prompts, run benchmarks against xAI (Grok), get scores and aggregates. Leaderboard by Sharpe-like ratio. Confidence allocation (points) per user per prompt. Web2 demo — no crypto, no payments.
 
@@ -58,6 +58,27 @@ curl -X POST http://localhost:3000/api/evaluate \
 # Leaderboard
 curl http://localhost:3000/api/leaderboard
 ```
+
+## SDK
+
+Install the official client:
+
+```bash
+npm install @signaldex/sdk
+```
+
+```ts
+import { createClient } from "@signaldex/sdk";
+
+const client = createClient({
+  baseUrl: "https://your-signaldex.com",
+  apiKey: "your-internal-api-key",
+});
+const created = await client.createPrompt({ name, content, category, modelUsed });
+const result = await client.evaluate({ promptId: created.data.id });
+```
+
+See [packages/sdk/README.md](packages/sdk/README.md) for full API. To publish the SDK: from `packages/sdk`, run `npm run build` then `npm publish --access public` (requires npm org `signaldex` or a scoped account).
 
 ## Scripts
 
