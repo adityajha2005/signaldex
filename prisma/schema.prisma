@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email                 String                 @unique
+  createdAt             DateTime               @default(now())
+  confidenceAllocations ConfidenceAllocation[]
+}
+
+model Prompt {
+  id                    String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                  String
+  content               String                 @db.Text
+  category              String
+  modelUsed             String
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  evaluationRuns        EvaluationRun[]
+  evaluationAggregate   EvaluationAggregate?
+  confidenceAllocations ConfidenceAllocation[]
+}
+
+model EvaluationRun {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  promptId  String   @db.Uuid
+  prompt    Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  testInput String   @db.Text
+  output    String   @db.Text
+  rawScore  Float
+  createdAt DateTime @default(now())
+
+  @@index([promptId])
+}
+
+model EvaluationAggregate {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  promptId     String   @unique @db.Uuid
+  prompt       Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  meanScore    Float
+  stdDeviation Float
+  volatility   Float
+  roi          Float
+  sharpeRatio  Float
+  updatedAt    DateTime @updatedAt
+
+  @@index([sharpeRatio])
+  @@index([meanScore])
+}
+
+model ConfidenceAllocation {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  promptId  String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prompt    Prompt   @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  points    Int
+  createdAt DateTime @default(now())
+
+  @@unique([userId, promptId])
+  @@index([userId])
+  @@index([promptId])
+}

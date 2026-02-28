@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PDX — Prompt Derivatives Exchange
 
-## Getting Started
+Deterministic prompt evaluation engine. Submit prompts, run benchmarks against xAI (Grok), get scores and aggregates. Leaderboard by Sharpe-like ratio. Confidence allocation (points) per user per prompt. Web2 demo — no crypto, no payments.
 
-First, run the development server:
+## Stack
+
+- **Next.js** (App Router), **TypeScript**
+- **Prisma** + **PostgreSQL** (Neon)
+- **xAI API** (Grok, temperature 0)
+- **Zod** for validation
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Edit `.env`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string (e.g. Neon with `?sslmode=require`) |
+| `XAI_API_KEY` | Yes | xAI API key |
+| `INTERNAL_API_KEY` | Yes | Secret for protecting `POST /api/evaluate` (e.g. 32-byte hex) |
+| `XAI_MODEL` | No | Model name (default: `grok-4-1-fast-reasoning`) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npx prisma migrate dev --name init
+npm run dev
+```
 
-## Learn More
+## API
 
-To learn more about Next.js, take a look at the following resources:
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/prompts` | — | Create prompt. Body: `name`, `content` (10–4000 chars), `category`, `modelUsed`. |
+| POST | `/api/evaluate` | `x-api-key` header | Run benchmarks for a prompt. Body: `promptId`, `category` (optional, default `general`). Persists runs and aggregate. |
+| GET | `/api/leaderboard` | — | Top 20 prompts by `sharpeRatio` DESC, `meanScore` DESC. |
+| POST | `/api/allocate` | — | Allocate confidence points. Body: `userId`, `promptId`, `points` (1–1000). Max 1000 points per user total. |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+All responses: `{ success: boolean, data?: T, error?: string }`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Example
 
-## Deploy on Vercel
+```bash
+# Create prompt
+curl -X POST http://localhost:3000/api/prompts \
+  -H "Content-Type: application/json" \
+  -d '{"name":"My Prompt","content":"You are a helpful assistant. Answer concisely.","category":"general","modelUsed":"grok-4-1-fast-reasoning"}'
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Evaluate (use prompt id and your INTERNAL_API_KEY)
+curl -X POST http://localhost:3000/api/evaluate \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_INTERNAL_API_KEY" \
+  -d '{"promptId":"<id>","category":"general"}'
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Leaderboard
+curl http://localhost:3000/api/leaderboard
+```
+
+## Scripts
+
+- `npm run dev` — dev server
+- `npm run build` / `npm run start` — production
+- `npm run lint` — ESLint
+- `npx prisma studio` — DB UI
+- `npx prisma migrate dev` — run migrations
