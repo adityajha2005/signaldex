@@ -2,6 +2,8 @@ import { z } from "zod";
 import { withApi, throwStatus } from "@/lib/api";
 import { prisma } from "@/lib/db";
 
+const BODY_MODEL = "Signaldex";
+
 const bodySchema = z.object({
   name: z.string().min(3, "name must be at least 3 characters"),
   content: z
@@ -9,7 +11,6 @@ const bodySchema = z.object({
     .min(10, "content must be at least 10 characters")
     .max(4000, "content must not exceed 4000 characters"),
   category: z.string().min(1, "category is required"),
-  modelUsed: z.string().min(1, "modelUsed is required"),
 });
 
 async function handlePost(request: Request): Promise<unknown> {
@@ -21,10 +22,10 @@ async function handlePost(request: Request): Promise<unknown> {
       "Invalid body";
     throwStatus(msg, 400);
   }
-  const { name, content, category, modelUsed } = parsed.data;
+  const { name, content, category } = parsed.data;
 
   const prompt = await prisma.prompt.create({
-    data: { name, content, category, modelUsed },
+    data: { name, content, category, modelUsed: BODY_MODEL },
     select: { id: true, name: true, category: true, modelUsed: true, createdAt: true },
   });
 

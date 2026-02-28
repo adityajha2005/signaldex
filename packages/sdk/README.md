@@ -18,12 +18,11 @@ const client = createClient({
   apiKey: "your-internal-api-key",         // required for evaluate()
 });
 
-// Create a prompt
+// Create a prompt (evaluations run on Signaldex)
 const created = await client.createPrompt({
   name: "My Prompt",
   content: "You are a helpful assistant. Answer concisely.",
   category: "general",
-  modelUsed: "grok-4-1-fast-reasoning",
 });
 if (!created.success) throw new Error(created.error);
 const promptId = created.data.id;

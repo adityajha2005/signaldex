@@ -6,7 +6,7 @@ export type Prompt = {
   id: string;
   name: string;
   category: string;
-  modelUsed: string;
+  modelUsed: "Signaldex";
   createdAt: string;
 };
 
@@ -38,7 +38,6 @@ export type CreatePromptParams = {
   name: string;
   content: string;
   category: string;
-  modelUsed: string;
 };
 
 export type EvaluateParams = {

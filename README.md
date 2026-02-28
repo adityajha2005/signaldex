@@ -34,7 +34,7 @@ npm run dev
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/api/prompts` | — | Create prompt. Body: `name`, `content` (10–4000 chars), `category`, `modelUsed`. |
+| POST | `/api/prompts` | — | Create prompt. Body: `name`, `content` (10–4000 chars), `category`. Evaluations run on Signaldex. |
 | POST | `/api/evaluate` | `x-api-key` header | Run benchmarks for a prompt. Body: `promptId`, `category` (optional, default `general`). Persists runs and aggregate. |
 | GET | `/api/leaderboard` | — | Top 20 prompts by `sharpeRatio` DESC, `meanScore` DESC. |
 | POST | `/api/allocate` | — | Allocate confidence points. Body: `userId`, `promptId`, `points` (1–1000). Max 1000 points per user total. |
@@ -47,7 +47,7 @@ All responses: `{ success: boolean, data?: T, error?: string }`.
 # Create prompt
 curl -X POST http://localhost:3000/api/prompts \
   -H "Content-Type: application/json" \
-  -d '{"name":"My Prompt","content":"You are a helpful assistant. Answer concisely.","category":"general","modelUsed":"grok-4-1-fast-reasoning"}'
+  -d '{"name":"My Prompt","content":"You are a helpful assistant. Answer concisely.","category":"general"}'
 
 # Evaluate (use prompt id and your INTERNAL_API_KEY)
 curl -X POST http://localhost:3000/api/evaluate \
@@ -74,7 +74,7 @@ const client = createClient({
   baseUrl: "https://your-signaldex.com",
   apiKey: "your-internal-api-key",
 });
-const created = await client.createPrompt({ name, content, category, modelUsed });
+const created = await client.createPrompt({ name, content, category });
 const result = await client.evaluate({ promptId: created.data.id });
 ```
 
